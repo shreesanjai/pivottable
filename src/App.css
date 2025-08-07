@@ -1,7 +1,5 @@
-#root {
-  max-width: 1280px;
+.input-button {
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
@@ -39,4 +37,14 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.error {
+  position: relative;
+  background-color: aliceblue;
+  color: #cf0606aa;
+  font-weight: bolder;
+  padding: 4px 7px;
+  margin-right: 2px;
+  margin-bottom: 2px;
 }
