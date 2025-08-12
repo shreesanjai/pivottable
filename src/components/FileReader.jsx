@@ -39,7 +39,7 @@ const FileReader = ({ setData, setError, setHeaders }) => {
 
   return (
     <>
-      <input type="file" onChange={getFile} id="fileGetter" hidden />
+      <input type="file" onChange={getFile} accept=".csv" id="fileGetter" hidden />
       <button
         className="input-button"
         onClick={() => document.querySelector("#fileGetter").click()}

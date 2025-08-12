@@ -27,12 +27,11 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
   }, [headers]);
 
   useEffect(() => {
-    if (rows.length === 0 && columns.length === 0) setShowAllData(true);
+    if (rows.length === 0 && columns.length === 0) setShowAllData(false);
     else setShowAllData(false);
   }, [rows, columns, values]);
 
-  // --------------------------- Drag drop logic
-
+  // --------------------------- Drag drop 
   const handleDragStart = (e, header) => {
     setActiveDrag(header.id);
   };
@@ -58,7 +57,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
         (target === "values" && header.type === "number") ||
         target !== "values";
 
-      if (header.parent_id !== target && isValidrop) {
+      if (header.parent_id !== target) {
         updatedHeaders[headerIndex] = { ...header, parent_id: target };
 
         // Duplicates Handling & insertion
@@ -70,7 +69,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
           setColumns((prev) =>
             prev.includes(headerName) ? prev : [...prev, headerName]
           );
-        if (target === "values" && !values.includes(headerName))
+        if (target === "values")
           setValues((prev) =>
             prev.includes(headerName) ? prev : [...prev, headerName]
           );
@@ -186,11 +185,12 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
               className="h-70 bg-black rounded-lg mb-2 p-3 overflow-y-auto no-scrollbar"
               onDrop={(e) => handleDrop(e, "rows")}
               onDragOver={allowDrop}
+              onDragEnd={(e) => setActiveDrag(null)}
             >
               {rows.map((row, idx) => (
                 <div
                   key={idx}
-                  draggable
+                  //draggable
                   className="h-item mb-2 flex justify-between px-4 h-min py-2 text-white rounded-lg shadow text-sm font-medium cursor-grab active:cursor-grabbing transition duration-150 ease-in-out select-none "
                 >
                   {row}{" "}
@@ -210,6 +210,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
               className="h-70 bg-black rounded-lg mb-2 p-3 overflow-y-auto no-scrollbar"
               onDrop={(e) => handleDrop(e, "columns")}
               onDragOver={allowDrop}
+              onDragEnd={(e) => setActiveDrag(null)}
             >
               {columns.map((col, idx) => (
                 <div
@@ -238,6 +239,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
             className="h-40 bg-black rounded-lg mb-2 p-3 overflow-y-auto no-scrollbar"
             onDrop={(e) => handleDrop(e, "values")}
             onDragOver={allowDrop}
+            onDragEnd={(e) => setActiveDrag(null)}
           >
             {values.map((val, idx) => (
               <div
