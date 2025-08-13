@@ -17,7 +17,7 @@ export const rowAggregate = (items, agg) => {
 
     case "avg": {
       return {
-        value: sum / count,
+        value: isNaN(sum / count) ? sum : sum / count,
         sum: sum,
         length: count,
       };
@@ -62,7 +62,7 @@ export const rowAggregate = (items, agg) => {
 export const rowWiseAggregation = (arr, step = 1, agg) => {
   if (arr.length === 0) return [];
   if (!step || step <= 0) {
-    console.error("Invalid step value:", step);
+    //console.error("Invalid step value:", step);
     return [];
   }
 
@@ -105,7 +105,7 @@ export const rowWiseAggregation = (arr, step = 1, agg) => {
       });
     }
   }
-  console.log(res);
+  //console.log(res);
 
   return res;
 };
@@ -230,3 +230,19 @@ export const isValidNumber = (item) => {
     ? item.value.toFixed(3)
     : item.value.toString();
 };
+
+export const headerWord = (item) => {
+  switch(item)
+  {
+    case "sum":
+      return "Sum Of ";
+    case "avg":
+      return "Average Of "
+    case "count":
+      return "Count Of "
+    case "max":
+      return "Maximum Of "
+    case "min":
+      return "Minimum Of "
+  }
+}

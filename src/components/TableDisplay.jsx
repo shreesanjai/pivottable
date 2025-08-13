@@ -8,6 +8,7 @@ import {
   rowWiseAggregation,
   columnWiseAggregation,
   flattenRowTree,
+  headerWord,
 } from "../utils/calculate";
 
 const createPivotColumnHeader = (pivotLevel) => {
@@ -31,6 +32,8 @@ const createPivotColumnHeader = (pivotLevel) => {
     </>
   );
 };
+
+
 
 const TableDisplay = ({ rows, columns, values, data, agg }) => {
   const [tableValues, setTableValues] = useState([]);
@@ -123,7 +126,7 @@ const TableDisplay = ({ rows, columns, values, data, agg }) => {
                       key={idx}
                       className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r "
                     >
-                      {item}
+                      {headerWord(agg)}{item}
                     </td>
                   ))
                 ) : (columns.length <= 0 && rows.length > 0) ||
