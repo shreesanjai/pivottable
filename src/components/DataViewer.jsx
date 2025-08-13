@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./dataviewer.css";
-import { useReactTable, flexRender } from "@tanstack/react-table";
 import TableDisplay from "./TableDisplay";
 
-const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
+const DataViewer = ({ data, headers }) => {
   const [agg, setAgg] = useState("sum");
 
   const [rows, setRows] = useState([]);
@@ -31,7 +30,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
     else setShowAllData(false);
   }, [rows, columns, values]);
 
-  // --------------------------- Drag drop 
+  // --------------------------- Drag drop
   const handleDragStart = (e, header) => {
     setActiveDrag(header.id);
   };
@@ -57,10 +56,9 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
         (target === "values" && header.type === "number") ||
         target !== "values";
 
-      if (header.parent_id !== target) {
+      if (header.parent_id !== target && isValidrop) {
         updatedHeaders[headerIndex] = { ...header, parent_id: target };
 
-        // Duplicates Handling & insertion
         if (target === "rows")
           setRows((prev) =>
             prev.includes(headerName) ? prev : [...prev, headerName]
@@ -69,13 +67,11 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
           setColumns((prev) =>
             prev.includes(headerName) ? prev : [...prev, headerName]
           );
-        if (target === "values")
+        if (target === "values" && !columns.includes(headerName))
           setValues((prev) =>
             prev.includes(headerName) ? prev : [...prev, headerName]
           );
       }
-
-      //console.log(updatedHeaders);
 
       return updatedHeaders;
     });
@@ -138,7 +134,6 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
               values={values}
               agg={agg}
               data={data}
-              headers={Object.keys(headers)}
             />
           </>
         )}
@@ -166,7 +161,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
                     key={header.id}
                     draggable
                     onDragStart={(e) => handleDragStart(e, header)}
-                    onDragEnd={(e) => setActiveDrag(null)}
+                    onDragEnd={() => setActiveDrag(null)}
                     className="h-item flex px-4 h-min py-2 text-white rounded-lg shadow text-sm font-medium cursor-grab active:cursor-grabbing transition duration-150 ease-in-out select-none"
                   >
                     {headers[header.headerName] === "number" ? "∑ " : ""}
@@ -185,7 +180,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
               className="h-70 bg-black rounded-lg mb-2 p-3 overflow-y-auto no-scrollbar"
               onDrop={(e) => handleDrop(e, "rows")}
               onDragOver={allowDrop}
-              onDragEnd={(e) => setActiveDrag(null)}
+              onDragEnd={() => setActiveDrag(null)}
             >
               {rows.map((row, idx) => (
                 <div
@@ -196,7 +191,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
                   {row}{" "}
                   <span
                     className="ml-2 text-red-400 cursor-pointer hover:text-red-600"
-                    onClick={(e) => removeItem(row, idx, "rows")}
+                    onClick={() => removeItem(row, idx, "rows")}
                   >
                     ❌
                   </span>
@@ -210,7 +205,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
               className="h-70 bg-black rounded-lg mb-2 p-3 overflow-y-auto no-scrollbar"
               onDrop={(e) => handleDrop(e, "columns")}
               onDragOver={allowDrop}
-              onDragEnd={(e) => setActiveDrag(null)}
+              onDragEnd={() => setActiveDrag(null)}
             >
               {columns.map((col, idx) => (
                 <div
@@ -220,7 +215,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
                   {col}{" "}
                   <span
                     className="ml-2 text-red-400 cursor-pointer hover:text-red-600"
-                    onClick={(e) => removeItem(col, idx, "columns")}
+                    onClick={() => removeItem(col, idx, "columns")}
                   >
                     ❌
                   </span>
@@ -239,7 +234,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
             className="h-40 bg-black rounded-lg mb-2 p-3 overflow-y-auto no-scrollbar"
             onDrop={(e) => handleDrop(e, "values")}
             onDragOver={allowDrop}
-            onDragEnd={(e) => setActiveDrag(null)}
+            onDragEnd={() => setActiveDrag(null)}
           >
             {values.map((val, idx) => (
               <div
@@ -249,7 +244,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
                 {val}{" "}
                 <span
                   className="ml-2 text-red-400 cursor-pointer hover:text-red-600"
-                  onClick={(e) => removeItem(val, idx, "values")}
+                  onClick={() => removeItem(val, idx, "values")}
                 >
                   ❌
                 </span>
@@ -274,7 +269,7 @@ const DataViewer = ({ data, headers, setData, setHeaders, setError }) => {
                   checked={agg === option}
                   onChange={() => setAgg(option)}
                 />
-                {option.charAt(0).toUpperCase() + option.slice(1)}
+                {option === "avg" ? "Average" : option.charAt(0).toUpperCase() + option.slice(1)}
               </label>
             ))}
           </div>
