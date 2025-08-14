@@ -9,7 +9,7 @@ export const rowAggregate = (items, agg) => {
   switch (agg) {
     case "sum": {
       return {
-        value: isNaN(sum) ? count : sum,
+        value: sum,
         sum: sum,
         length: count,
       };
@@ -17,7 +17,7 @@ export const rowAggregate = (items, agg) => {
 
     case "avg": {
       return {
-        value: isNaN(sum / count) ? sum : sum / count,
+        value: sum / count,
         sum: sum,
         length: count,
       };
@@ -59,19 +59,18 @@ export const rowAggregate = (items, agg) => {
   }
 };
 
-export const rowWiseAggregation = (arr, step = 1, agg) => {
-  if (arr.length === 0) return [];
+export const rowWiseAggregation = (values, step = 1, agg) => {
+  if (values.length === 0) return [];
   if (!step || step <= 0) {
-    //console.error("Invalid step value:", step);
     return [];
   }
 
   const result = Array.from({ length: step }, () => []);
   const res = [];
 
-  if (!arr) return;
+  if (!values) return;
 
-  arr.map((value, index) => {
+  values.map((value, index) => {
     const groupIndex = index % step;
     result[groupIndex].push(value);
   });
@@ -160,13 +159,7 @@ export const buildTree = (
         children = values.map((v) => ({ title: v, children: [], span: 0 }));
       }
 
-      const span =
-        children.length > 0
-          ? children.reduce(
-              (sum, child) => sum + child.span + (child.span === 0 ? 1 : 0),
-              0
-            )
-          : 1;
+      const span = children.length > 0 ? children.reduce((sum, child) => sum + child.span + (child.span === 0 ? 1 : 0),0) : 1;
 
       return {
         title: value,
@@ -240,5 +233,7 @@ export const headerWord = (item) => {
       return "Maximum Of ";
     case "min":
       return "Minimum Of ";
+    default:
+      return "";
   }
 };

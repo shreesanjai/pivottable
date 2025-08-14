@@ -25,12 +25,10 @@ const FileReader = ({
         setData(res.data);
 
         const data = res.data[1];
-
         const headers = {};
 
         for (let head in data) {
           const value = data[head];
-
           if (!isNaN(Number(value)) && value !== null && value !== "")
             headers[head] = "number";
           else headers[head] = "string";

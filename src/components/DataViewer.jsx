@@ -3,14 +3,13 @@ import "./dataviewer.css";
 import TableDisplay from "./TableDisplay";
 import FileReader from "./FileReader";
 
-const DataViewer = ({ data, headers, setData, setHeaders,setFileName }) => {
+const DataViewer = ({ data, headers, setData, setHeaders, setFileName }) => {
   const [rows, setRows] = useState([]);
   const [columns, setColumns] = useState([]);
   const [measures, setMeasures] = useState([]);
 
   const [activeDrag, setActiveDrag] = useState(null);
   const [mainHeaders, setMainHeaders] = useState(null);
-  const [showAllData, setShowAllData] = useState(true);
   const [aggregateArray, setAggregateArray] = useState([]);
 
   useEffect(() => {
@@ -25,22 +24,15 @@ const DataViewer = ({ data, headers, setData, setHeaders,setFileName }) => {
     setMainHeaders(mainHeaders);
   }, [headers]);
 
-  useEffect(() => {
-    if (rows.length === 0 && columns.length === 0) setShowAllData(false);
-    else setShowAllData(false);
-  }, [rows, columns, measures]);
+  const handleAggregationChange = (value, index) => {
+    const measureAggregate = [...aggregateArray];
+    measureAggregate[index] = value;
+    setAggregateArray(measureAggregate);
+  };
 
   // --------------------------- Drag drop
   const handleDragStart = (e, header) => {
     setActiveDrag(header.id);
-  };
-
-  const handleAggregationChange = (value, index) => {
-    const measureAggregate = [...aggregateArray];
-
-    measureAggregate[index] = value;
-
-    setAggregateArray(measureAggregate);
   };
 
   const allowDrop = (e) => {
@@ -114,46 +106,14 @@ const DataViewer = ({ data, headers, setData, setHeaders,setFileName }) => {
   return (
     <div className="main-frame">
       <div className="table-frame no-scrollbar">
-        {/* {JSON.stringify(mainHeaders)} */}
-
-        {mainHeaders && showAllData ? (
-          <table className="w-full">
-            <thead>
-              <tr>
-                {mainHeaders.map((items, idx) => {
-                  return (
-                    <th className="w-5 border border-gray-200" key={idx}>
-                      {items.headerName}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {mainHeaders.map((header, idx) => (
-                    <td
-                      key={idx}
-                      className=" w-5 px-1 py-1 self-center border border-gray-200"
-                    >
-                      {row[header.headerName]}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <>
-            <TableDisplay
-              rows={rows}
-              columns={columns}
-              measures={measures}
-              aggegateArray={aggregateArray}
-              data={data}
-            />
-          </>
+        {mainHeaders && (
+          <TableDisplay
+            rows={rows}
+            columns={columns}
+            measures={measures}
+            aggegateArray={aggregateArray}
+            data={data}
+          />
         )}
       </div>
 
@@ -282,28 +242,6 @@ const DataViewer = ({ data, headers, setData, setHeaders,setFileName }) => {
             ))}
           </div>
         </div>
-
-        {/* ---------- Aggregation ---------- */}
-        {/* <div className="p-1 w-full">
-          <h4 className="font-semibold text-lg text-white mb-2">Aggregation</h4>
-          <div className="flex flex-row flex-wrap gap-6">
-            {["sum", "avg", "count", "max", "min"].map((option) => (
-              <label
-                key={option}
-                className="px-2 flex items-baseline gap-2 text-white cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  name="agg"
-                  value={option}
-                  checked={agg === option}
-                  onChange={() => setAgg(option)}
-                />
-                {option === "avg" ? "Average" : option.charAt(0).toUpperCase() + option.slice(1)}
-              </label>
-            ))}
-          </div>
-        </div> */}
       </div>
     </div>
   );

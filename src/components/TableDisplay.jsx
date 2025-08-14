@@ -13,14 +13,13 @@ import {
 
 const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
   const [tableValues, setTableValues] = useState([]);
+  const [flattenedRowTree, setFlattenedRowTree] = useState([]);
 
   const pivotRows = useMemo(() => buildTree(data, rows), [data, rows]);
   const pivotColumns = useMemo(
     () => buildTree(data, columns, measures, true),
     [data, columns, measures]
   );
-
-  const [flattenedRowTree, setFlattenedRowTree] = useState([]);
 
   useEffect(() => {
     setFlattenedRowTree(flattenRowTree(pivotRows));
@@ -33,7 +32,7 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
       const tempTableValues = [];
 
       for (let row of flattenedRow) {
-        row = row.split("|");
+        row = row.split("|").filter((prev) => prev !== "");
 
         const rowFilter = data.filter((item) =>
           rows.every((key, index) => item[key] === row[index])
@@ -57,7 +56,7 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
         if (pivotColumns.length > 1) {
           const rowAggregateValue = rowWiseAggregation(
             tableRow,
-            measures.length === 0 ? 1 : measures.length,
+            measures.length,
             aggegateArray
           );
           tableRow.push(...rowAggregateValue);
@@ -67,7 +66,7 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
 
       const aggregateRow = columnWiseAggregation(
         tempTableValues,
-        measures.length === 0 ? 1 : measures.length,
+        measures.length,
         aggegateArray
       );
       setTableValues([...tempTableValues, aggregateRow]);
@@ -102,14 +101,14 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
     <>
       <div>
         {(rows.length > 0 || columns.length > 0 || measures.length > 0) && (
-          <table className="text-sm md:text-base botder-t border-gray-200 table-auto bg-white dark:bg-[#1c1c1e] text-gray-900 rounded-sm dark:text-white overflow-hidden ">
+          <table className="text-sm md:text-base botder-t border-gray-200 table-auto bg-[#1c1c1e] text-gray-900 rounded-sm dark:text-white overflow-hidden ">
             <thead className="bg-gray-100 dark:bg-[#2c2c2e]">
-              <tr className="text-center px-4 py-3 font-medium text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-600">
+              <tr className="text-center px-4 py-3 font-medium text-gray-100 border-b border-gray-300 dark:border-gray-600">
                 {rows.map((item, idx) => (
                   <td
                     rowSpan={columns.length + 1}
                     key={idx}
-                    className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r "
+                    className="px-4 py-1 border-b border-gray-700 font-medium border-r "
                   >
                     {item}
                   </td>
