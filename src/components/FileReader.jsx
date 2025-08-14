@@ -1,12 +1,14 @@
 import Papa from "papaparse";
 
-const FileReader = ({ setData, setError, setHeaders }) => {
+const FileReader = ({ setData, setHeaders, resetData = () => {} }) => {
   const getFile = (e) => {
     const file = e.target.files[0];
 
+    resetData();
+
     if (!file) return;
     if (!file.name.endsWith(".csv")) {
-      setError("Select CSV File");
+      console.error("Select CSV File");
 
       return;
     }
@@ -26,20 +28,25 @@ const FileReader = ({ setData, setError, setHeaders }) => {
 
           if (!isNaN(Number(value)) && value !== null && value !== "")
             headers[head] = "number";
-          else 
-            headers[head] = "string";
+          else headers[head] = "string";
         }
         setHeaders(headers);
       },
       error: function (err) {
-        setError(err);
+        console.log(err);
       },
     });
   };
 
   return (
     <>
-      <input type="file" onChange={getFile} accept=".csv" id="fileGetter" hidden />
+      <input
+        type="file"
+        onChange={getFile}
+        accept=".csv"
+        id="fileGetter"
+        hidden
+      />
       <button
         className="input-button"
         onClick={() => document.querySelector("#fileGetter").click()}

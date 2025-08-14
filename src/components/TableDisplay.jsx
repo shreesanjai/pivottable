@@ -11,37 +11,13 @@ import {
   headerWord,
 } from "../utils/calculate";
 
-const createPivotColumnHeader = (pivotLevel) => {
-  if (!pivotLevel || pivotLevel.length === 0) return null;
-
-  return (
-    <>
-      <tr>
-        {pivotLevel.map((item, idx) => (
-          <td
-            className="text-center px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r"
-            key={idx}
-            colSpan={item.span}
-          >
-            {item.title}
-          </td>
-        ))}
-      </tr>
-      {pivotLevel.every((item) => item.children.length > 0) &&
-        createPivotColumnHeader(pivotLevel.flatMap((item) => item.children))}
-    </>
-  );
-};
-
-
-
-const TableDisplay = ({ rows, columns, values, data, agg }) => {
+const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
   const [tableValues, setTableValues] = useState([]);
 
   const pivotRows = useMemo(() => buildTree(data, rows), [data, rows]);
   const pivotColumns = useMemo(
-    () => buildTree(data, columns, values, true),
-    [data, columns, values]
+    () => buildTree(data, columns, measures, true),
+    [data, columns, measures]
   );
 
   const [flattenedRowTree, setFlattenedRowTree] = useState([]);
@@ -51,53 +27,82 @@ const TableDisplay = ({ rows, columns, values, data, agg }) => {
   }, [pivotRows]);
 
   useEffect(() => {
-    const flattenedRow = flattenTree(pivotRows);
-    const flattenedColumn = flattenTree(pivotColumns);
-    const tempTableValues = [];
+    if (measures.length > 0) {
+      const flattenedRow = flattenTree(pivotRows);
+      const flattenedColumn = flattenTree(pivotColumns);
+      const tempTableValues = [];
 
-    for (let row of flattenedRow) {
-      row = row.split("|");
+      for (let row of flattenedRow) {
+        row = row.split("|");
 
-      const rowFilter = data.filter((item) =>
-        rows.every((key, index) => item[key] === row[index])
-      );
-
-      const tableRow = [];
-
-      for (let col of flattenedColumn) {
-        col = col.split("|");
-        const columnFilter = rowFilter
-          .filter((item) =>
-            columns.every((key, index) => item[key] === col[index])
-          )
-          .map((x) => x[col[col.length - 1]]);
-
-        tableRow.push(rowAggregate(columnFilter, agg));
-      }
-
-      if (pivotColumns.length > 1) {
-        const rowAggregateValue = rowWiseAggregation(
-          tableRow,
-          values.length === 0 ? 1 : values.length,
-          agg === "count" ? "sum" : agg
+        const rowFilter = data.filter((item) =>
+          rows.every((key, index) => item[key] === row[index])
         );
-        tableRow.push(...rowAggregateValue);
-      }
-      tempTableValues.push([...tableRow]);
-    }
 
-    const aggregateRow = columnWiseAggregation(
-      tempTableValues,
-      agg === "count" ? "sum" : agg
+        const tableRow = [];
+
+        for (let [index, col] of flattenedColumn.entries()) {
+          col = col.split("|").filter((prev) => prev !== "");
+          const columnFilter = rowFilter
+            .filter((item) =>
+              columns.every((key, idx) => item[key] === col[idx])
+            )
+            .map((x) => x[col[col.length - 1]]);
+
+          tableRow.push(
+            rowAggregate(columnFilter, aggegateArray[index % measures.length])
+          );
+        }
+
+        if (pivotColumns.length > 1) {
+          const rowAggregateValue = rowWiseAggregation(
+            tableRow,
+            measures.length === 0 ? 1 : measures.length,
+            aggegateArray
+          );
+          tableRow.push(...rowAggregateValue);
+        }
+        tempTableValues.push([...tableRow]);
+      }
+
+      const aggregateRow = columnWiseAggregation(
+        tempTableValues,
+        measures.length === 0 ? 1 : measures.length,
+        aggegateArray
+      );
+      setTableValues([...tempTableValues, aggregateRow]);
+    } else setTableValues([]);
+  }, [data, rows, columns, measures, pivotRows, pivotColumns, aggegateArray]);
+
+  const createPivotColumnHeader = (pivotLevel) => {
+    if (!pivotLevel || pivotLevel.length === 0) return null;
+
+    return (
+      <>
+        <tr>
+          {pivotLevel.map((item, idx) => (
+            <td
+              className="text-center px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r"
+              key={idx}
+              colSpan={item.span}
+            >
+              {item.children.length === 0 &&
+                headerWord(aggegateArray[idx % measures.length])}
+              {item.title}
+            </td>
+          ))}
+        </tr>
+        {pivotLevel.every((item) => item.children.length > 0) &&
+          createPivotColumnHeader(pivotLevel.flatMap((item) => item.children))}
+      </>
     );
-    setTableValues([...tempTableValues, aggregateRow]);
-  }, [data, rows, columns, values, pivotRows, pivotColumns, agg]);
+  };
 
   return (
     <>
       <div>
-        {(rows.length > 0 || columns.length > 0) && (
-          <table className="w-5/6 text-sm md:text-base table-auto bg-white dark:bg-[#1c1c1e] text-gray-900 rounded-sm dark:text-white overflow-hidden">
+        {(rows.length > 0 || columns.length > 0 || measures.length > 0) && (
+          <table className="text-sm md:text-base botder-t border-gray-200 table-auto bg-white dark:bg-[#1c1c1e] text-gray-900 rounded-sm dark:text-white overflow-hidden my-5 ">
             <thead className="bg-gray-100 dark:bg-[#2c2c2e]">
               <tr className="text-center px-4 py-3 font-medium text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-600">
                 {rows.map((item, idx) => (
@@ -119,27 +124,18 @@ const TableDisplay = ({ rows, columns, values, data, agg }) => {
                       {item.title}
                     </td>
                   ))}
-                {values.length > 0 ? (
-                  values.map((item, idx) => (
+                {measures.length > 0 &&
+                  measures.map((item, idx) => (
                     <td
                       rowSpan={columns.length + 1}
                       key={idx}
                       className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r "
                     >
-                      {headerWord(agg)}{item}
+                      {"Total "}
+                      {headerWord(aggegateArray[idx % measures.length])}
+                      {item}
                     </td>
-                  ))
-                ) : (columns.length <= 0 && rows.length > 0) ||
-                  values.length <= 0 ? (
-                  <td
-                    rowSpan={columns.length + 1}
-                    className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r "
-                  >
-                    Total
-                  </td>
-                ) : (
-                  <></>
-                )}
+                  ))}
               </tr>
 
               {pivotColumns.length > 1 &&
@@ -153,10 +149,11 @@ const TableDisplay = ({ rows, columns, values, data, agg }) => {
                 flattenedRowTree.map((item, idx) => {
                   return (
                     <tr key={idx}>
-                      {item.map((x) => {
+                      {item.map((x, idx) => {
                         if (x.title === undefined) return;
                         return (
                           <td
+                            key={idx}
                             rowSpan={x.span}
                             className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r "
                           >
@@ -165,9 +162,12 @@ const TableDisplay = ({ rows, columns, values, data, agg }) => {
                         );
                       })}
                       {tableValues.length >= flattenedRowTree.length &&
-                        tableValues[idx].map((item,idx) => {
+                        tableValues[idx].map((item, idx) => {
                           return (
-                            <td className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r" key={idx}>
+                            <td
+                              className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r"
+                              key={idx}
+                            >
                               {isValidNumber(item)}
                             </td>
                           );
@@ -176,11 +176,12 @@ const TableDisplay = ({ rows, columns, values, data, agg }) => {
                   );
                 })}
             </tbody>
-            <tfoot>
-              {rows.length > 0 && (
-                <tr className="text-center px-4 py-3 font-medium text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-[#2c2c2e]">
+
+            <tfoot className=" bg-gray-100 dark:bg-[#2c2c2e]">
+              {tableValues.length > 2 && (
+                <tr className="text-left px-4 py-3 font-medium text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-600">
                   <td
-                    className="text-center px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r "
+                    className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r "
                     colSpan={rows.length}
                   >
                     Total

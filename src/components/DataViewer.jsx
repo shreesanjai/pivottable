@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import "./dataviewer.css";
 import TableDisplay from "./TableDisplay";
+import FileReader from "./FileReader";
 
-const DataViewer = ({ data, headers }) => {
-  const [agg, setAgg] = useState("sum");
-
+const DataViewer = ({ data, headers, setData, setHeaders }) => {
   const [rows, setRows] = useState([]);
   const [columns, setColumns] = useState([]);
-  const [values, setValues] = useState([]);
+  const [measures, setMeasures] = useState([]);
 
   const [activeDrag, setActiveDrag] = useState(null);
   const [mainHeaders, setMainHeaders] = useState(null);
   const [showAllData, setShowAllData] = useState(true);
+  const [aggregateArray, setAggregateArray] = useState([]);
 
   useEffect(() => {
     const mainHeaders = Object.entries(headers).map(([key, value]) => {
@@ -28,11 +28,19 @@ const DataViewer = ({ data, headers }) => {
   useEffect(() => {
     if (rows.length === 0 && columns.length === 0) setShowAllData(false);
     else setShowAllData(false);
-  }, [rows, columns, values]);
+  }, [rows, columns, measures]);
 
   // --------------------------- Drag drop
   const handleDragStart = (e, header) => {
     setActiveDrag(header.id);
+  };
+
+  const handleAggregationChange = (value, index) => {
+    const measureAggregate = [...aggregateArray];
+
+    measureAggregate[index] = value;
+
+    setAggregateArray(measureAggregate);
   };
 
   const allowDrop = (e) => {
@@ -67,10 +75,12 @@ const DataViewer = ({ data, headers }) => {
           setColumns((prev) =>
             prev.includes(headerName) ? prev : [...prev, headerName]
           );
-        if (target === "values" && !columns.includes(headerName))
-          setValues((prev) =>
+        if (target === "values" && !columns.includes(headerName)) {
+          setMeasures((prev) =>
             prev.includes(headerName) ? prev : [...prev, headerName]
           );
+          handleAggregationChange("sum", measures.length);
+        }
       }
 
       return updatedHeaders;
@@ -89,8 +99,16 @@ const DataViewer = ({ data, headers }) => {
     if (target === "rows") setRows((prev) => prev.filter((_, i) => i !== idx));
     if (target === "columns")
       setColumns((prev) => prev.filter((_, i) => i !== idx));
-    if (target === "values")
-      setValues((prev) => prev.filter((_, i) => i !== idx));
+    if (target === "measures") {
+      setMeasures((prev) => prev.filter((_, i) => i !== idx));
+      setAggregateArray((prev) => prev.filter((_, i) => i !== idx));
+    }
+  };
+
+  const resetAllData = () => {
+    setRows([]);
+    setColumns([]);
+    setMeasures([]);
   };
 
   return (
@@ -131,8 +149,8 @@ const DataViewer = ({ data, headers }) => {
             <TableDisplay
               rows={rows}
               columns={columns}
-              values={values}
-              agg={agg}
+              measures={measures}
+              aggegateArray={aggregateArray}
               data={data}
             />
           </>
@@ -140,13 +158,13 @@ const DataViewer = ({ data, headers }) => {
       </div>
 
       <div className="container-frame">
-        {/* <div className="flex items-center w-full">
+        <div className="flex items-center w-full">
           <FileReader
             setData={setData}
-            setError={setError}
             setHeaders={setHeaders}
+            resetData={resetAllData}
           />
-        </div> */}
+        </div>
 
         {/* ----------- Headers ----------- */}
 
@@ -231,20 +249,31 @@ const DataViewer = ({ data, headers }) => {
             Values (∑ Numbers Only)
           </h4>
           <div
-            className="h-40 bg-black rounded-lg mb-2 p-3 overflow-y-auto no-scrollbar"
+            className="h-50 bg-black rounded-lg mb-2 p-3 overflow-y-auto no-scrollbar"
             onDrop={(e) => handleDrop(e, "values")}
             onDragOver={allowDrop}
             onDragEnd={() => setActiveDrag(null)}
           >
-            {values.map((val, idx) => (
+            {measures.map((val, idx) => (
               <div
                 key={idx}
-                className="h-item mb-2 flex justify-between px-4 h-min py-2 text-white rounded-lg shadow text-sm font-medium cursor-grab active:cursor-grabbing transition duration-150 ease-in-out select-none"
+                className="h-item mb-2 flex justify-between items-baseline px-4 h-min py-2 text-white rounded-lg shadow text-sm font-medium cursor-grab active:cursor-grabbing transition duration-150 ease-in-out select-none"
               >
                 {val}{" "}
+                <select
+                  onChange={(e) => handleAggregationChange(e.target.value, idx)}
+                  className="px-1 py-1 rounded-sm bg-black text-white hover:border-gray-300"
+                  value={aggregateArray[idx]}
+                >
+                  <option value="sum">Sum</option>
+                  <option value="avg">Average</option>
+                  <option value="count">Count</option>
+                  <option value="max">Max</option>
+                  <option value="min">Min</option>
+                </select>
                 <span
                   className="ml-2 text-red-400 cursor-pointer hover:text-red-600"
-                  onClick={() => removeItem(val, idx, "values")}
+                  onClick={() => removeItem(val, idx, "measures")}
                 >
                   ❌
                 </span>
@@ -254,7 +283,7 @@ const DataViewer = ({ data, headers }) => {
         </div>
 
         {/* ---------- Aggregation ---------- */}
-        <div className="p-1 w-full">
+        {/* <div className="p-1 w-full">
           <h4 className="font-semibold text-lg text-white mb-2">Aggregation</h4>
           <div className="flex flex-row flex-wrap gap-6">
             {["sum", "avg", "count", "max", "min"].map((option) => (
@@ -273,7 +302,7 @@ const DataViewer = ({ data, headers }) => {
               </label>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

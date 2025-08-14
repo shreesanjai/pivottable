@@ -71,58 +71,55 @@ export const rowWiseAggregation = (arr, step = 1, agg) => {
 
   if (!arr) return;
 
-  function forNotAverage() {
-    arr.map((value, index) => {
-      const groupIndex = index % step;
-      result[groupIndex].push(value.value);
-    });
-    for (var i = 0; i < result.length; i++) {
-      res.push(rowAggregate(result[i], agg === "count" ? "sum" : agg));
-    }
-  }
+  arr.map((value, index) => {
+    const groupIndex = index % step;
+    result[groupIndex].push(value);
+  });
 
-  if (agg !== "avg") forNotAverage();
-  else {
-    const summation = Array.from({ length: step }, () => []);
-    const totalCount = Array.from({ length: step }, () => []);
-    arr.map((value, index) => {
-      const groupIndex = index % step;
-      summation[groupIndex].push(value.sum);
-    });
-
-    arr.map((value, index) => {
-      const groupIndex = index % step;
-      totalCount[groupIndex].push(value.length);
-    });
-
-    for (var i = 0; i < result.length; i++) {
+  for (var i = 0; i < step; i++) {
+    if (agg[i] !== "avg") {
+      res.push(
+        rowAggregate(
+          result[i].map((item) => item.value),
+          agg[i] === "count" ? "sum" : agg[i]
+        )
+      );
+    } else {
+      const sumUp = rowAggregate(
+        result[i].map((item) => item.sum),
+        "sum"
+      ).value;
+      const total = rowAggregate(
+        result[i].map((item) => item.length),
+        "sum"
+      ).value;
       res.push({
-        value:
-          rowAggregate(summation[i], "sum").value /
-          rowAggregate(totalCount[i], "sum").value,
-        sum: rowAggregate(summation[i], "sum").value,
-        length: rowAggregate(totalCount[i], "sum").value,
+        value: sumUp / total,
+        sum: sumUp,
+        length: total,
       });
     }
   }
-  //console.log(res);
 
   return res;
 };
 
-export const columnWiseAggregation = (values, agg) => {
+export const columnWiseAggregation = (values, step = 1, agg) => {
   if (!values.length) return [];
 
   const colLength = values[0].length;
   const aggregateRow = [];
 
-  if (agg !== "avg") {
-    for (let i = 0; i < colLength; i++) {
+  for (let i = 0; i < colLength; i++) {
+    if (agg[i % step] !== "avg") {
       const colValues = values.map((row) => row[i].value);
-      aggregateRow.push(rowAggregate(colValues, agg));
-    }
-  } else {
-    for (let i = 0; i < colLength; i++) {
+      aggregateRow.push(
+        rowAggregate(
+          colValues,
+          agg[i % step] === "count" ? "sum" : agg[i % step]
+        )
+      );
+    } else {
       const summation = rowAggregate(
         values.map((row) => row[i].sum),
         "sum"
@@ -232,17 +229,16 @@ export const isValidNumber = (item) => {
 };
 
 export const headerWord = (item) => {
-  switch(item)
-  {
+  switch (item) {
     case "sum":
       return "Sum Of ";
     case "avg":
-      return "Average Of "
+      return "Average Of ";
     case "count":
-      return "Count Of "
+      return "Count Of ";
     case "max":
-      return "Maximum Of "
+      return "Maximum Of ";
     case "min":
-      return "Minimum Of "
+      return "Minimum Of ";
   }
-}
+};
