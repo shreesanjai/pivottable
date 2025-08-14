@@ -102,7 +102,7 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
     <>
       <div>
         {(rows.length > 0 || columns.length > 0 || measures.length > 0) && (
-          <table className="text-sm md:text-base botder-t border-gray-200 table-auto bg-white dark:bg-[#1c1c1e] text-gray-900 rounded-sm dark:text-white overflow-hidden my-5 ">
+          <table className="text-sm md:text-base botder-t border-gray-200 table-auto bg-white dark:bg-[#1c1c1e] text-gray-900 rounded-sm dark:text-white overflow-hidden ">
             <thead className="bg-gray-100 dark:bg-[#2c2c2e]">
               <tr className="text-center px-4 py-3 font-medium text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-600">
                 {rows.map((item, idx) => (

@@ -3,7 +3,7 @@ import "./dataviewer.css";
 import TableDisplay from "./TableDisplay";
 import FileReader from "./FileReader";
 
-const DataViewer = ({ data, headers, setData, setHeaders }) => {
+const DataViewer = ({ data, headers, setData, setHeaders,setFileName }) => {
   const [rows, setRows] = useState([]);
   const [columns, setColumns] = useState([]);
   const [measures, setMeasures] = useState([]);
@@ -163,6 +163,7 @@ const DataViewer = ({ data, headers, setData, setHeaders }) => {
             setData={setData}
             setHeaders={setHeaders}
             resetData={resetAllData}
+            setFileName={setFileName}
           />
         </div>
 

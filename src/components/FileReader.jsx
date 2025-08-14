@@ -1,9 +1,14 @@
 import Papa from "papaparse";
 
-const FileReader = ({ setData, setHeaders, resetData = () => {} }) => {
+const FileReader = ({
+  setData,
+  setHeaders,
+  setFileName,
+  resetData = () => {},
+}) => {
   const getFile = (e) => {
     const file = e.target.files[0];
-
+    setFileName(file.name);
     resetData();
 
     if (!file) return;
