@@ -159,7 +159,13 @@ export const buildTree = (
         children = values.map((v) => ({ title: v, children: [], span: 0 }));
       }
 
-      const span = children.length > 0 ? children.reduce((sum, child) => sum + child.span + (child.span === 0 ? 1 : 0),0) : 1;
+      const span =
+        children.length > 0
+          ? children.reduce(
+              (sum, child) => sum + child.span + (child.span === 0 ? 1 : 0),
+              0
+            )
+          : 1;
 
       return {
         title: value,
@@ -181,32 +187,63 @@ export const flattenTree = (nodes, path = []) => {
   });
 };
 
+// export const flattenRowTree = (data) => {
+//   const result = [];
+//   let lastPath = [];
+
+//   function traverse(nodes, path = []) {
+//     for (const node of nodes) {
+//       const newPath = [...path, { title: node.title, span: node.span }];
+
+//       if (node.children && node.children.length > 0) {
+//         traverse(node.children, newPath);
+//       } else {
+//         let i = 0;
+//         while (
+//           i < newPath.length &&
+//           i < lastPath.length &&
+//           newPath[i].title === lastPath[i].title
+//         )
+//           i++;
+
+//         result.push(newPath.slice(i));
+//         lastPath = newPath;
+//       }
+//     }
+//   }
+
+//   traverse(data);
+
+//   return result;
+// };
+
 export const flattenRowTree = (data) => {
   const result = [];
-  let lastPath = [];
+  // let lastPath = [];
 
   function traverse(nodes, path = []) {
     for (const node of nodes) {
-      const newPath = [...path, { title: node.title, span: node.span }];
+      const newPath = [...path, { title: node.title, span: 1 }];
 
       if (node.children && node.children.length > 0) {
         traverse(node.children, newPath);
       } else {
-        let i = 0;
-        while (
-          i < newPath.length &&
-          i < lastPath.length &&
-          newPath[i].title === lastPath[i].title
-        ) {
-          i++;
-        }
-        result.push(newPath.slice(i));
-        lastPath = newPath;
+        // let i = 0;
+        // while (
+        //   i < newPath.length &&
+        //   i < lastPath.length &&
+        //   newPath[i].title === lastPath[i].title
+        // )
+        //   i++;
+
+        result.push(newPath);
+        // lastPath = newPath;
       }
     }
   }
 
   traverse(data);
+
   return result;
 };
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./dataviewer.css";
 import TableDisplay from "./TableDisplay";
 import FileReader from "./FileReader";
+import Pagination from "./Pagination";
 
 const DataViewer = ({ data, headers, setData, setHeaders, setFileName }) => {
   const [rows, setRows] = useState([]);
@@ -11,6 +12,11 @@ const DataViewer = ({ data, headers, setData, setHeaders, setFileName }) => {
   const [activeDrag, setActiveDrag] = useState(null);
   const [mainHeaders, setMainHeaders] = useState(null);
   const [aggregateArray, setAggregateArray] = useState([]);
+
+  // Pagination
+    const [totalRows,setTotalRows] = useState(0);
+    const [limit,setLimit] = useState(10);
+    const [offset,setOffset] = useState(1);
 
   useEffect(() => {
     const mainHeaders = Object.entries(headers).map(([key, value]) => {
@@ -105,16 +111,29 @@ const DataViewer = ({ data, headers, setData, setHeaders, setFileName }) => {
 
   return (
     <div className="main-frame">
-      <div className="table-frame no-scrollbar">
-        {mainHeaders && (
-          <TableDisplay
-            rows={rows}
-            columns={columns}
-            measures={measures}
-            aggegateArray={aggregateArray}
-            data={data}
-          />
-        )}
+      <div className="table-frame flex flex-col">
+        <div className="overflow-auto h-11/12 no-scrollbar">
+          {mainHeaders && (
+            <TableDisplay
+              rows={rows}
+              columns={columns}
+              measures={measures}
+              aggegateArray={aggregateArray}
+              data={data}
+              setTotalRows={setTotalRows}
+              limit={limit}
+              offset={offset}
+              totalCount={totalRows}
+            />
+          )}
+        </div>
+        <Pagination 
+          limit={limit}
+          setLimit={setLimit}
+          offset={offset}
+          setOffset={setOffset}
+          totalCount={totalRows}
+        />
       </div>
 
       <div className="container-frame">

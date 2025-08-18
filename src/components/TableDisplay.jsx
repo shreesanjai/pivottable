@@ -11,7 +11,17 @@ import {
   headerWord,
 } from "../utils/calculate";
 
-const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
+const TableDisplay = ({
+  rows,
+  columns,
+  measures,
+  data,
+  aggegateArray,
+  setTotalRows,
+  limit,
+  offset,
+  totalCount,
+}) => {
   const [tableValues, setTableValues] = useState([]);
   const [flattenedRowTree, setFlattenedRowTree] = useState([]);
 
@@ -21,13 +31,30 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
     [data, columns, measures]
   );
 
-  useEffect(() => {
-    setFlattenedRowTree(flattenRowTree(pivotRows));
-  }, [pivotRows]);
+  // useEffect(() => {
+
+  // }, [pivotRows]);
 
   useEffect(() => {
+    if (pivotRows.length > 0) {
+      console.log(pivotRows);
+      
+      const flattenedRowtree = flattenRowTree(pivotRows);
+      console.log(flattenedRowtree);
+      
+      setFlattenedRowTree(
+        flattenedRowtree.slice(
+          (offset - 1) * limit,
+          Math.min(offset * limit, totalCount)
+        )
+      );
+      setTotalRows(flattenedRowtree.length);
+    }
     if (measures.length > 0) {
-      const flattenedRow = flattenTree(pivotRows);
+      const flattenedRow = flattenTree(pivotRows).slice(
+        (offset - 1) * limit,
+        Math.min(offset * limit, totalCount)
+      );
       const flattenedColumn = flattenTree(pivotColumns);
       const tempTableValues = [];
 
@@ -71,7 +98,19 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
       );
       setTableValues([...tempTableValues, aggregateRow]);
     } else setTableValues([]);
-  }, [data, rows, columns, measures, pivotRows, pivotColumns, aggegateArray]);
+  }, [
+    data,
+    rows,
+    columns,
+    measures,
+    pivotRows,
+    pivotColumns,
+    aggegateArray,
+    limit,
+    offset,
+    totalCount,
+    setTotalRows
+  ]);
 
   const createPivotColumnHeader = (pivotLevel) => {
     if (!pivotLevel || pivotLevel.length === 0) return null;
@@ -81,7 +120,7 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
         <tr>
           {pivotLevel.map((item, idx) => (
             <td
-              className="text-center px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r"
+              className="text-center px-4 py-1 border-gray-600 font-medium border"
               key={idx}
               colSpan={item.span}
             >
@@ -99,16 +138,16 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
 
   return (
     <>
-      <div>
+      <div className="rounded-sm">
         {(rows.length > 0 || columns.length > 0 || measures.length > 0) && (
-          <table className="text-sm md:text-base botder-t border-gray-200 table-auto bg-[#1c1c1e] text-gray-900 rounded-sm dark:text-white overflow-hidden ">
-            <thead className="bg-gray-100 dark:bg-[#2c2c2e]">
-              <tr className="text-center px-4 py-3 font-medium text-gray-100 border-b border-gray-300 dark:border-gray-600">
+          <table className="text-sm md:text-base border-gray-600 bg-[#1c1c1e] rounded-lg text-white overflow-hidden border">
+            <thead className="bg-[#2c2c2e]">
+              <tr className="text-center px-4 py-3 font-medium text-gray-100 border-gray-600 border">
                 {rows.map((item, idx) => (
                   <td
                     rowSpan={columns.length + 1}
                     key={idx}
-                    className="px-4 py-1 border-b border-gray-700 font-medium border-r "
+                    className="px-4 py-1 border-gray-600 font-medium border"
                   >
                     {item}
                   </td>
@@ -118,7 +157,7 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
                     <td
                       colSpan={item.span}
                       key={idx}
-                      className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r "
+                      className="px-4 py-1 border-gray-600 font-medium border"
                     >
                       {item.title}
                     </td>
@@ -128,7 +167,7 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
                     <td
                       rowSpan={columns.length + 1}
                       key={idx}
-                      className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r "
+                      className="px-4 py-1 border-gray-600 font-medium border"
                     >
                       {"Total "}
                       {headerWord(aggegateArray[idx % measures.length])}
@@ -154,7 +193,7 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
                           <td
                             key={idx}
                             rowSpan={x.span}
-                            className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r "
+                            className="px-4 py-1 border-gray-600 font-medium border"
                           >
                             {x.title}
                           </td>
@@ -164,7 +203,7 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
                         tableValues[idx].map((item, idx) => {
                           return (
                             <td
-                              className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r"
+                              className="px-4 py-1 border-gray-600 font-medium border"
                               key={idx}
                             >
                               {isValidNumber(item)}
@@ -178,9 +217,9 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
 
             <tfoot className=" bg-gray-100 dark:bg-[#2c2c2e]">
               {tableValues.length > 2 && (
-                <tr className="text-left px-4 py-3 font-medium text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-600">
+                <tr className="text-left px-4 py-3 font-medium text-white border-gray-600 border">
                   <td
-                    className="px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r "
+                    className="px-4 py-1 border-gray-600 font-medium border"
                     colSpan={rows.length}
                   >
                     Total
@@ -189,7 +228,7 @@ const TableDisplay = ({ rows, columns, measures, data, aggegateArray }) => {
                   {tableValues.length > 0 &&
                     tableValues[tableValues.length - 1].map((item, idx) => (
                       <td
-                        className="text-left px-4 py-1 border-b border-gray-200 dark:border-gray-700 font-medium border-r "
+                        className="text-left px-4 py-1 text-white border-gray-600 font-medium border"
                         key={idx}
                       >
                         {isValidNumber(item)}

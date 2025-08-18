@@ -1,5 +1,5 @@
 .main-frame {
-  width: 97vw; /* 100% of the viewport width */
+  width: 97vw; 
   height: 90vh;
   margin: 20px;
   gap: 10px;
@@ -7,10 +7,11 @@
   justify-content: space-between;
 }
 
+
+
 .table-frame {
   width: 75%; 
   height: 90vh;
-  overflow-x: auto;
   overflow-y: auto;
 }
 
